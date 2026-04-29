@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Little Something For You 🌸</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --rose:    #f472b6;
+    --blush:   #fda4af;
+    --lavender:#c084fc;
+    --deep:    #7c3aed;
+    --cream:   #fff1f2;
+    --text:    #3b0764;
+    --glass-bg: rgba(255,255,255,0.18);
+    --glass-border: rgba(255,255,255,0.35);
+  }
+
+  html, body {
+    height: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: linear-gradient(135deg, #1a0533 0%, #3b0764 30%, #6b21a8 60%, #9d174d 100%);
+    min-height: 100vh;
+    color: var(--text);
+    cursor: default;
+  }
+
+  /* ─── CANVAS PARTICLES ─── */
+  #particleCanvas {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── FLOATING HEARTS (JS-triggered) ─── */
+  .float-heart {
+    position: fixed;
+    font-size: 1.5rem;
+    pointer-events: none;
+    z-index: 999;
+    animation: floatUp 3s ease-out forwards;
+    user-select: none;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(0) scale(0) rotate(0deg); opacity: 1; }
+    50%  { opacity: 1; }
+    100% { transform: translateY(-100vh) scale(1.4) rotate(20deg); opacity: 0; }
+  }
+
+  /* ─── LAYOUT ─── */
+  .scene {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  /* ─── HERO CARD ─── */
+  .hero-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 2rem;
+    padding: 3rem 2.5rem;
+    max-width: 520px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.4);
+    animation: cardReveal 1.2s cubic-bezier(0.16,1,0.3,1) forwards;
+    opacity: 0;
+  }
+  @keyframes cardReveal {
+    from { opacity: 0; transform: translateY(40px) scale(0.94); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .card-eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--blush);
+    margin-bottom: 1rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.6s forwards;
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 6vw, 2.9rem);
+    font-weight: 600;
+    line-height: 1.15;
+    color: #fff;
+    text-shadow: 0 2px 20px rgba(244,114,182,0.4);
+    margin-bottom: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.8s forwards;
+  }
+
+  .card-subtitle {
+    font-style: italic;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 1s forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── COUNTDOWN ─── */
+  .countdown-wrap {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2.2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 1.2s forwards;
+  }
+  .cd-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 1rem;
+    padding: 0.7rem 1.1rem;
+    min-width: 64px;
+  }
+  .cd-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1;
+    transition: transform 0.2s;
+  }
+  .cd-num.tick { animation: numTick 0.3s ease; }
+  @keyframes numTick {
+    0%  { transform: translateY(-6px); opacity: 0.5; }
+    100%{ transform: translateY(0); opacity: 1; }
+  }
+  .cd-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--blush);
+    margin-top: 0.25rem;
+  }
+
+  /* ─── QUESTION + BUTTONS ─── */
+  .question-section {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .question-section.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .today-date {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.78);
+    margin-top: 0.6rem;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .today-date.visible {
+    opacity: 1;
+  }
+
+  .auth-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10, 8, 28, 0.94);
+    backdrop-filter: blur(12px);
+    z-index: 999;
+  }
+  .auth-box {
+    width: min(100%, 360px);
+    padding: 2rem;
+    border-radius: 1.6rem;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow: 0 24px 70px rgba(0,0,0,0.45);
+    text-align: center;
+  }
+  .auth-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: #fff;
+    margin-bottom: 1.2rem;
+  }
+  .auth-box input {
+    width: 100%;
+    padding: 0.95rem 1rem;
+    border-radius: 0.95rem;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.09);
+    color: #fff;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    outline: none;
+  }
+  .auth-box input::placeholder {
+    color: rgba(255,255,255,0.6);
+  }
+  .auth-box button {
+    width: 100%;
+    padding: 0.95rem 1rem;
+    border-radius: 0.95rem;
+    border: none;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #f472b6, #c084fc);
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .auth-box button:hover {
+    transform: translateY(-1px);
+  }
+  .auth-error {
+    color: #ffd6e9;
+    min-height: 1.2rem;
+    margin-top: 0.85rem;
+    font-size: 0.95rem;
+  }
+  .shake {
+    animation: shakeInput 0.3s ease;
+  }
+  @keyframes shakeInput {
+    0%,100% { transform: translateX(0); }
+    20%,60% { transform: translateX(-6px); }
+    40%,80% { transform: translateX(6px); }
+  }
+
+  .question-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem;
+    color: #fff;
+    margin-bottom: 1.5rem;
+    min-height: 2rem;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    height: 3.5rem;
+  }
+
+  .btn {
+    padding: 0.75rem 2rem;
+    border-radius: 3rem;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+
+  .btn-yes {
+    background: linear-gradient(135deg, var(--rose), var(--lavender));
+    color: #fff;
+    box-shadow: 0 8px 28px rgba(244,114,182,0.45);
+  }
+  .btn-yes:hover {
+    transform: scale(1.07) translateY(-2px);
+    box-shadow: 0 12px 36px rgba(244,114,182,0.6);
+  }
+  .btn-yes:active { transform: scale(0.97); }
+
+  .btn-no {
+    background: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.2);
+    position: absolute;
+    transition: none; /* JS handles movement */
+    white-space: nowrap;
+  }
+
+  /* ─── INLINE FEEDBACK ─── */
+  .feedback-msg {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    color: #fff;
+    margin-top: 1.2rem;
+    min-height: 1.8rem;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  .feedback-msg.show { opacity: 1; }
+
+  /* ─── MAIN CONTENT ─── */
+  .main-content {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.8s ease 0.3s, max-height 1s ease 0.1s;
+    margin-top: 0;
+  }
+  .main-content.revealed {
+    opacity: 1;
+    max-height: 600px;
+    margin-top: 2.2rem;
+  }
+
+  .divider {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--blush), transparent);
+    margin: 0 auto 1.5rem;
+  }
+
+  .main-inner {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 1.3rem;
+    padding: 1.8rem 1.5rem;
+  }
+
+  .typing-line {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.15rem;
+    color: rgba(255,255,255,0.9);
+    line-height: 1.7;
+    min-height: 2rem;
+  }
+
+  .typing-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    background: var(--blush);
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: blink 0.85s infinite;
+  }
+  @keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+
+  /* ─── CUSTOM CONTENT SLOT ─── */
+  .custom-content-slot {
+    margin-top: 1.2rem;
+  }
+
+  .note-card {
+    background: rgba(255, 244, 250, 0.18);
+    border: 1px dashed rgba(255, 209, 220, 0.75);
+    border-radius: 1.6rem;
+    padding: 1.5rem 1.4rem;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14), 0 20px 60px rgba(0,0,0,0.2);
+    backdrop-filter: blur(10px);
+    text-align: left;
+    color: rgba(255,255,255,0.95);
+    line-height: 1.75;
+  }
+
+  .note-card p {
+    margin: 0 0 1rem;
+    opacity: 0;
+    transform: translateX(-14px) scaleX(0.96);
+    animation: handwrite 3s ease forwards;
+    animation-fill-mode: forwards;
+    display: block;
+    white-space: normal;
+    word-break: break-word;
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+  }
+
+  .note-card p:nth-child(1) { animation-delay: 0.8s; }
+  .note-card p:nth-child(2) { animation-delay: 5s; }
+  .note-card p:nth-child(3) { animation-delay: 10s; }
+  .note-card p.signature { animation-delay: 15s; font-size: 1.15rem; margin-top: 1.2rem; color: #ffe4f2; }
+
+  @keyframes handwrite {
+    0% { opacity: 0; transform: translateX(-18px) scaleX(0.94); }
+    45% { opacity: 1; transform: translateX(3px) scaleX(1.02); }
+    100% { opacity: 1; transform: translateX(0) scaleX(1); }
+  }
+
+  /* ─── MUSIC TOGGLE ─── */
+  .music-btn {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 100;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .music-btn:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(244,114,182,0.4); }
+
+  /* ─── TEASER BAR ─── */
+  .tease-msg {
+    font-size: 0.88rem;
+    color: var(--blush);
+    margin-top: 0.7rem;
+    min-height: 1.2rem;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .tease-msg.show { opacity: 1; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 480px) {
+    .hero-card { padding: 2.2rem 1.4rem; border-radius: 1.5rem; }
+    .cd-unit { min-width: 52px; padding: 0.5rem 0.7rem; }
+    .cd-num { font-size: 1.6rem; }
+    .btn { padding: 0.65rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="particleCanvas"></canvas>
+
+<div id="authOverlay" class="auth-overlay">
+  <div class="auth-box">
+    <p class="auth-title">Please enter your password, madam ji!</p>
+    <p class="auth-title" style="font-size:0.95rem; margin-top:0.4rem; color: rgba(255,255,255,0.75);">Hint: Thinking? its angels born day dd/mm</p>
+    <input type="password" id="authInput" placeholder="Your secret password" autocomplete="off">
+    <button id="authSubmit">Unlock</button>
+    <p class="auth-error" id="authError"></p>
+  </div>
+</div>
+
+<div class="scene">
+  <div class="hero-card">
+    <p class="card-eyebrow">A small love note for you 🌸</p>
+    <h1 class="card-title">Counting Down<br>to August 18</h1>
+    <p class="card-subtitle">a wish from Akash A, wrapped in soft stars.</p>
+    <p class="today-date" id="todayDate"></p>
+
+    <!-- COUNTDOWN -->
+    <div class="countdown-wrap">
+      <div class="cd-unit"><span class="cd-num" id="cd-days">--</span><span class="cd-label">Days</span></div>
+      <div class="cd-unit"><span class="cd-num" id="cd-hours">--</span><span class="cd-label">Hours</span></div>
+      <div class="cd-unit"><span class="cd-num" id="cd-mins">--</span><span class="cd-label">Mins</span></div>
+      <div class="cd-unit"><span class="cd-num" id="cd-secs">--</span><span class="cd-label">Secs</span></div>
+    </div>
+
+    <!-- QUESTION -->
+    <div class="question-section" id="questionSection">
+      <p class="question-text" id="questionText"></p>
+      <div class="btn-row" id="btnRow">
+        <button class="btn btn-yes" id="btnYes">Yes 💖</button>
+        <button class="btn btn-no" id="btnNo">No 😑</button>
+      </div>
+      <p class="tease-msg" id="teaseMsg">Hey! You can't say no 😤</p>
+      <p class="feedback-msg" id="feedbackMsg"></p>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content" id="mainContent">
+      <div class="divider"></div>
+      <div class="main-inner">
+        <p class="typing-line" id="typingLine"><span class="typing-cursor"></span></p>
+        <div class="custom-content-slot" id="customSlot" style="display:none;">
+          <div class="note-card">
+            <p>Every moment I think of you, the world feels softer and more beautiful.</p>
+            <p>Your smile is the spark that brightens my day and makes my heart flutter.</p>
+            <p>I wrote this note with a gentle wish that your every dream feels as warm as my love for you.</p>
+            <p class="signature">Forever yours, Akash A</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<audio id="bgMusic" src="N.MP3.mp3" loop preload="auto" autoplay playsinline></audio>
+
+<!-- Gentle ambient tone via Web Audio (no file needed) -->
+<script>
+/* ═══════════════════════════════════════════════
+   PARTICLE CANVAS
+═══════════════════════════════════════════════ */
+(function() {
+  const canvas = document.getElementById('particleCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const emojis = ['✦','·','˚','*','✧'];
+  function Particle() {
+    this.reset = function() {
+      this.x  = Math.random() * W;
+      this.y  = Math.random() * H;
+      this.s  = Math.random() * 14 + 6;
+      this.a  = Math.random() * 0.5 + 0.1;
+      this.vx = (Math.random() - 0.5) * 0.25;
+      this.vy = -Math.random() * 0.4 - 0.1;
+      this.char = emojis[Math.floor(Math.random() * emojis.length)];
+    };
+    this.reset();
+    this.y = Math.random() * H;
+  }
+
+  for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+  function loop() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      ctx.globalAlpha = p.a;
+      ctx.font = `${p.s}px serif`;
+      ctx.fillStyle = '#fda4af';
+      ctx.fillText(p.char, p.x, p.y);
+      p.x += p.vx; p.y += p.vy;
+      if (p.y < -20) p.reset();
+    });
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+/* ═══════════════════════════════════════════════
+   COUNTDOWN
+═══════════════════════════════════════════════ */
+(function() {
+  const target = new Date(new Date().getFullYear() + '-08-18T00:00:00');
+  // if birthday already passed this year, count to next year
+  if (target < new Date()) target.setFullYear(target.getFullYear() + 1);
+
+  const ids = ['cd-days','cd-hours','cd-mins','cd-secs'];
+  let prev = [null,null,null,null];
+
+  function pad(n) { return String(n).padStart(2,'0'); }
+
+  function update() {
+    const diff = target - new Date();
+    if (diff <= 0) {
+      ids.forEach(id => document.getElementById(id).textContent = '00');
+      return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    [d,h,m,s].forEach((val, i) => {
+      const el = document.getElementById(ids[i]);
+      const str = pad(val);
+      if (str !== prev[i]) {
+        el.textContent = str;
+        el.classList.remove('tick');
+        void el.offsetWidth;
+        el.classList.add('tick');
+        prev[i] = str;
+      }
+    });
+  }
+  update();
+  setInterval(update, 1000);
+})();
+
+/* ═══════════════════════════════════════════════
+   QUESTION REVEAL
+═══════════════════════════════════════════════ */
+const qSection  = document.getElementById('questionSection');
+const qText     = document.getElementById('questionText');
+const btnYes    = document.getElementById('btnYes');
+const btnNo     = document.getElementById('btnNo');
+const feedbackMsg = document.getElementById('feedbackMsg');
+const teaseMsg  = document.getElementById('teaseMsg');
+const mainContent = document.getElementById('mainContent');
+const typingLine  = document.getElementById('typingLine');
+const customSlot  = document.getElementById('customSlot');
+
+// Type the question text
+function typeText(el, text, speed, cb) {
+  let i = 0;
+  el.textContent = '';
+  const timer = setInterval(() => {
+    el.textContent += text[i++];
+    if (i >= text.length) { clearInterval(timer); if(cb) cb(); }
+  }, speed);
+}
+
+function formatTodayText() {
+  const today = new Date();
+  return `Today is ${today.toLocaleDateString('en-US', { day: 'numeric', month: 'long' })} 🌷`;
+}
+
+const authOverlay = document.getElementById('authOverlay');
+const authInput = document.getElementById('authInput');
+const authSubmit = document.getElementById('authSubmit');
+const authError = document.getElementById('authError');
+const todayDate = document.getElementById('todayDate');
+const validPasswords = ['neha', 'Neha', '1808'];
+
+function revealQuestion() {
+  qSection.classList.add('visible');
+  typeText(qText, 'Do you feel my heart smiling? 😌', 85);
+}
+
+function showAuthError(message) {
+  authError.textContent = message;
+  authInput.classList.add('shake');
+  setTimeout(() => authInput.classList.remove('shake'), 300);
+}
+
+function unlockPage() {
+  authOverlay.style.display = 'none';
+  todayDate.textContent = formatTodayText();
+  todayDate.classList.add('visible');
+  setTimeout(() => {
+    revealQuestion();
+  }, 300);
+}
+
+function validatePassword() {
+  const entry = authInput.value.trim().toLowerCase();
+  if (validPasswords.includes(entry)) {
+    unlockPage();
+  } else {
+    showAuthError('That password is not right — try again, madam ji.');
+  }
+}
+
+authSubmit.addEventListener('click', validatePassword);
+authInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') validatePassword();
+});
+
+/* ═══════════════════════════════════════════════
+   FLOATING HEARTS
+═══════════════════════════════════════════════ */
+function spawnHeart() {
+  const hearts = ['💖','💗','💝','💕','🌸','✨','💓'];
+  const el = document.createElement('span');
+  el.className = 'float-heart';
+  el.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+  el.style.left   = Math.random() * 95 + 'vw';
+  el.style.bottom = '-2rem';
+  el.style.fontSize = (Math.random() * 1.4 + 0.8) + 'rem';
+  el.style.animationDuration = (Math.random() * 1.5 + 2) + 's';
+  document.body.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+}
+
+function burstHearts(count) {
+  for (let i = 0; i < count; i++) {
+    setTimeout(spawnHeart, i * 110);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   YES BUTTON
+═══════════════════════════════════════════════ */
+btnYes.addEventListener('click', () => {
+  burstHearts(28);
+
+  feedbackMsg.textContent = 'I knew it 😌💖';
+  feedbackMsg.classList.add('show');
+  teaseMsg.classList.remove('show');
+
+  btnYes.style.transition = 'opacity 0.4s, transform 0.4s';
+  btnNo.style.transition  = 'opacity 0.4s';
+  btnYes.style.opacity = '0';
+  btnYes.style.transform = 'scale(0.8)';
+  btnNo.style.opacity = '0';
+  btnNo.style.pointerEvents = 'none';
+
+  setTimeout(() => {
+    mainContent.classList.add('revealed');
+    revealTyping();
+  }, 1400);
+
+  let heartInterval = setInterval(spawnHeart, 600);
+  setTimeout(() => clearInterval(heartInterval), 24000);
+
+  // Wait for the handwritten note to finish before redirecting.
+  setTimeout(() => {
+    window.location.href = 'Neha Birthday12344.html';
+  }, 24000);
+});
+
+/* ═══════════════════════════════════════════════
+   NO BUTTON – ESCAPE LOGIC
+═══════════════════════════════════════════════ */
+let noMoved = false;
+let teaseShown = false;
+
+btnNo.addEventListener('mouseenter', escapeNo);
+btnNo.addEventListener('mousemove', escapeNo);
+btnNo.addEventListener('touchstart', escapeNo);
+
+function escapeNo(e) {
+  if (e) e.preventDefault();
+  const row  = document.getElementById('btnRow');
+  const rect = row.getBoundingClientRect();
+  const bw   = btnNo.offsetWidth;
+  const bh   = btnNo.offsetHeight;
+
+  // Random position within the card
+  const card = document.querySelector('.hero-card');
+  const cardRect = card.getBoundingClientRect();
+  const padding = 20;
+
+  const maxX = cardRect.width  - bw - padding;
+  const maxY = cardRect.height - bh - padding;
+
+  const rx = Math.random() * maxX + padding;
+  const ry = Math.random() * maxY + padding;
+
+  btnNo.style.position  = 'fixed';
+  btnNo.style.left      = (cardRect.left + rx) + 'px';
+  btnNo.style.top       = (cardRect.top  + ry) + 'px';
+  btnNo.style.transition= 'left 0.18s, top 0.18s';
+  noMoved = true;
+
+  if (!teaseShown) {
+    teaseShown = true;
+    teaseMsg.classList.add('show');
+    setTimeout(() => teaseMsg.classList.remove('show'), 2800);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   TYPING ANIMATION FOR MAIN CONTENT
+═══════════════════════════════════════════════ */
+const typingMessage = 'Now the real surprise begins…';
+
+function revealTyping() {
+  const cursor = document.querySelector('.typing-cursor');
+  let i = 0;
+  typingLine.textContent = '';
+  typingLine.appendChild(cursor);
+
+  const timer = setInterval(() => {
+    typingLine.insertBefore(document.createTextNode(typingMessage[i++]), cursor);
+    if (i >= typingMessage.length) {
+      clearInterval(timer);
+      setTimeout(() => {
+        cursor.style.display = 'none';
+        customSlot.style.display = 'block';
+        customSlot.style.opacity = '0';
+        customSlot.style.transition = 'opacity 0.8s';
+        setTimeout(() => customSlot.style.opacity = '1', 50);
+      }, 800);
+    }
+  }, 52);
+}
+
+/* ═══════════════════════════════════════════════
+   MUSIC
+═══════════════════════════════════════════════ */
+let audioCtx = null, gainNode = null;
+const audioTrack = document.getElementById('bgMusic');
+
+function buildAmbience() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  gainNode = audioCtx.createGain();
+  gainNode.gain.value = 0;
+  gainNode.connect(audioCtx.destination);
+
+  const notes = [261.63, 329.63, 392.00, 523.25]; // C4 E4 G4 C5
+  notes.forEach((freq, i) => {
+    const osc = audioCtx.createOscillator();
+    const g   = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    g.gain.value = 0.12 / (i + 1);
+    osc.connect(g);
+    g.connect(gainNode);
+    osc.start();
+  });
+}
+
+window.addEventListener('load', () => {
+  if (audioTrack && audioTrack.src) {
+    audioTrack.volume = 0.35;
+    audioTrack.addEventListener('ended', () => audioTrack.play());
+    const promise = audioTrack.play();
+    if (promise !== undefined) {
+      promise.catch(() => {
+        document.body.addEventListener('click', () => {
+          audioTrack.play().catch(() => {});
+        }, { once: true });
+      });
+    }
+  } else {
+    if (!audioCtx) buildAmbience();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    gainNode.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + 1.5);
+  }
+});
+</script>
+</body>
+</html>
