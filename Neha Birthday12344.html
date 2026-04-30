@@ -540,6 +540,169 @@ window.addEventListener('load',()=>{
   }
   setTimeout(runTerminal, 900);
 });
+  .moon {
+  position:fixed;
+  top:8%;
+  right:10%;
+  width:260px;
+  height:260px;
+  border-radius:50%;
+  background: radial-gradient(circle at 38% 38%, #f8fbff 0%, #eef4fb 18%, #d5dbe8 40%, #a9b3c7 64%, rgba(175,183,197,0.18) 82%, transparent 100%);
+  box-shadow: 0 0 220px rgba(255,255,255,0.18), inset 0 0 22px rgba(255,255,255,0.24);
+  border: 1px solid rgba(255,255,255,0.22);
+  z-index:0;
+  pointer-events:none;
+  overflow:hidden;
+  filter: drop-shadow(0 0 30px rgba(255,255,255,0.16));
+  animation: moonGlow 8s ease-in-out infinite alternate;
+  transform-origin: center;
+}
+
+.moon::before {
+  content:'';
+  position:absolute;
+  inset:12%;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 32% 32%, rgba(255,255,255,0.82) 0%, transparent 26%),
+    radial-gradient(circle at 62% 28%, rgba(255,255,255,0.24) 0%, transparent 18%),
+    radial-gradient(circle at 45% 64%, rgba(255,255,255,0.16) 0%, transparent 20%);
+  opacity: 0.96;
+}
+
+.moon::after {
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background: radial-gradient(circle at 70% 52%, rgba(255,255,255,0.08) 0%, transparent 32%),
+              radial-gradient(circle at 30% 50%, rgba(255,255,255,0.06) 0%, transparent 40%);
+  filter: blur(0.8px);
+}
+
+.moon-smile {
+  position: absolute;
+  left: 50%;
+  top: 65%;
+  width: 50px;
+  height: 28px;
+  transform: translateX(-50%);
+  border: 2.5px solid rgba(0,0,0,0.14);
+  border-top: none;
+  border-radius: 0 0 50px 50px;
+  z-index: 5;
+}
+
+.moon-eye {
+  position: absolute;
+  width: 14px;
+  height: 18px;
+  z-index: 6;
+}
+
+.moon-eye-left {
+  left: 32%;
+  top: 42%;
+}
+
+.moon-eye-right {
+  right: 32%;
+  top: 42%;
+}
+
+.moon-eye::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 40% 35%, #3d3d4d 0%, #1a1a22 50%);
+  border-radius: 50%;
+}
+
+.moon-eye::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 6px;
+  height: 8px;
+  background: rgba(255,255,255,0.6);
+  border-radius: 50%;
+}
+
+.moon-blush {
+  position: absolute;
+  width: 28px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,182,193,0.28) 0%, transparent 70%);
+  z-index: 4;
+}
+
+.moon-blush-left {
+  left: 18%;
+  top: 52%;
+}
+
+.moon-blush-right {
+  right: 18%;
+  top: 52%;
+}
+
+.moon-heart {
+  position:fixed;
+  top: calc(8% + 88px);
+  right: calc(10% - 4px);
+  width: 52px;
+  height: 48px;
+  pointer-events:none;
+  z-index:3;
+  opacity:0;
+  transform-origin:center;
+  background: linear-gradient(135deg, #ffb3d9 0%, #ff86b9 100%);
+  clip-path: path('M26 48 C12 40 0 30 0 20 C0 10 8 2 14 2 C18 2 22 5 26 9 C30 5 34 2 38 2 C44 2 52 10 52 20 C52 30 40 40 26 48 Z');
+  filter: drop-shadow(0 0 12px rgba(255,105,170,0.3));
+  animation: heartReveal 16s ease-in-out infinite;
+}
+
+@keyframes moonGlow {
+  from { transform: translateY(0px) scale(1); }
+  to { transform: translateY(-6px) scale(1.02); }
+}
+
+@keyframes heartReveal {
+  0%, 72% {
+    opacity: 0;
+    transform: scale(0.5) translateY(0);
+  }
+  78% {
+    opacity: 0.4;
+    transform: scale(0.7) translateY(-2px);
+  }
+  86% {
+    opacity: 0.8;
+    transform: scale(0.92) translateY(-4px);
+  }
+  94% {
+    opacity: 1;
+    transform: scale(1.1) translateY(-6px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.15) translateY(-7px);
+  }
+}
+  <div class="moon">
+  <span class="moon-smile"></span>
+  <span class="moon-eye moon-eye-left"></span>
+  <span class="moon-eye moon-eye-right"></span>
+  <span class="moon-blush moon-blush-left"></span>
+  <span class="moon-blush moon-blush-right"></span>
+</div>
+<div class="moon-heart"></div>
+<div class="moon-bow"><span></span></div>
 </script>
 </body>
 </html>
